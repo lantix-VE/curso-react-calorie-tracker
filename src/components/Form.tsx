@@ -1,11 +1,34 @@
 import { useState } from "react";
+import type { Activity } from "../types";
 import { categories } from "../data/category";
 export default function form() {
-  const [activity, setActivity] = useState({
+  const [activity, setActivity] = useState<Activity>({
     category: 1,
     name: "",
     calories: 0,
   });
+
+  const nombreCatActiva = categories.find(
+    (cat) => cat.id === activity.category
+  )?.name;
+
+  const handleChange = (
+    e:
+      | React.ChangeEvent<HTMLSelectElement>
+      | React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const isNumberField = ["category", "calories"].includes(e.target.id);
+    const valueActivity = isNumberField ? +e.target.value : e.target.value;
+    setActivity({
+      ...activity,
+      [e.target.id]: valueActivity,
+    });
+  };
+
+  const isActivityValid = () => {
+    const { name, calories } = activity;
+    return name.trim() !== "" && calories > 0;
+  };
   return (
     <form className="space-y-5 bg-white shadow p-10 rounded-lg">
       <div className="grid grid-cols-1 gap-3">
@@ -16,6 +39,7 @@ export default function form() {
           id="category"
           className="border-slate-300 p-2 rounded-lg w-full bg-white"
           value={activity.category}
+          onChange={handleChange}
         >
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>
@@ -34,6 +58,7 @@ export default function form() {
           className="border border-slate-300 p-2 rounded-lg"
           placeholder="Ej. Comida, Jugo de naranja, Ensalada, Ejercicio, Pesas, Bicicletas"
           value={activity.name}
+          onChange={handleChange}
         />
       </div>
 
@@ -47,13 +72,16 @@ export default function form() {
           className="border border-slate-300 p-2 rounded-lg"
           placeholder="Calorias. Ej. 300 o 500 "
           value={activity.calories}
+          onChange={handleChange}
         />
       </div>
 
       <input
         type="submit"
-        className="bg-gray-800 hover:bg-gray-900 w-full p-2 font-bold uppercase text-white"
-        value="Guardar comida o ejercicio"
+        className="bg-gray-800 hover:bg-gray-900 w-full  p-2 font-bold uppercase text-white disabled:opacity-20"
+        value={`Guardar ${nombreCatActiva}`}
+        onChange={handleChange}
+        disabled={!isActivityValid()}
       />
     </form>
   );
