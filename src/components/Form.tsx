@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, type Dispatch } from "react";
 import type { Activity } from "../types";
 import { categories } from "../data/category";
-export default function form() {
+import type { ActivityActions } from "../reducers/activity-reducers";
+
+type FormProps = {
+  dispatch: Dispatch<ActivityActions>;
+};
+export default function form({ dispatch }: FormProps) {
+  const initialState = { category: 1, name: "", calories: 0 };
   const [activity, setActivity] = useState<Activity>({
-    category: 1,
-    name: "",
-    calories: 0,
+    ...initialState,
   });
 
   const nombreCatActiva = categories.find(
@@ -25,12 +29,21 @@ export default function form() {
     });
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch({ type: "save-activity", payload: { newActivity: activity } });
+    setActivity({ ...initialState });
+  };
+
   const isActivityValid = () => {
     const { name, calories } = activity;
     return name.trim() !== "" && calories > 0;
   };
   return (
-    <form className="space-y-5 bg-white shadow p-10 rounded-lg">
+    <form
+      className="space-y-5 bg-white shadow p-10 rounded-lg"
+      onSubmit={handleSubmit}
+    >
       <div className="grid grid-cols-1 gap-3">
         <label htmlFor="category" className="font-bold">
           Categoría
