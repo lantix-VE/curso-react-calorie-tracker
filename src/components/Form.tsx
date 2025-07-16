@@ -1,17 +1,35 @@
-import { useState, type Dispatch } from "react";
+import { useEffect, useState, type Dispatch } from "react";
+import { v4 as uuidv4 } from "uuid";
 import type { Activity } from "../types";
 import { categories } from "../data/category";
-import type { ActivityActions } from "../reducers/activity-reducers";
+import type {
+  ActivityActions,
+  ActivityState,
+} from "../reducers/activity-reducers";
 
 type FormProps = {
   dispatch: Dispatch<ActivityActions>;
+  state: ActivityState;
 };
-export default function form({ dispatch }: FormProps) {
-  const initialState = { category: 1, name: "", calories: 0 };
+export default function form({ dispatch, state }: FormProps) {
+  const initialState: Activity = {
+    id: uuidv4(),
+    category: 1,
+    name: "",
+    calories: 0,
+  };
+
+  useEffect(() => {
+    if (state.activeId) {
+      const activityToEdit = state.activities.filter(
+        (activity) => state.activeId === activity.id
+      )[0];
+      setActivity(activityToEdit);
+    }
+  }, [state.activeId]);
   const [activity, setActivity] = useState<Activity>({
     ...initialState,
   });
-
   const nombreCatActiva = categories.find(
     (cat) => cat.id === activity.category
   )?.name;
@@ -32,7 +50,7 @@ export default function form({ dispatch }: FormProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     dispatch({ type: "save-activity", payload: { newActivity: activity } });
-    setActivity({ ...initialState });
+    setActivity({ ...initialState, id: uuidv4() });
   };
 
   const isActivityValid = () => {
